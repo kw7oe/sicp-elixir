@@ -8,14 +8,14 @@ first_domination = fn (kind_of_coins) ->
   end
 end
 
-# cc = fn (cc, amount, kind_of_coins) ->
-#   cond do
-#     amount == 0 -> 1
-#     amount < 0 || kind_of_coins == 0 -> 0
-#     true ->
-#       cc.(cc, amount, kind_of_coins - 1) + cc.(cc, amount - first_domination.(kind_of_coins), kind_of_coins)
-#   end
-# end
+cc = fn (cc, amount, kind_of_coins) ->
+  cond do
+    amount == 0 -> 1
+    amount < 0 || kind_of_coins == 0 -> 0
+    true ->
+      cc.(cc, amount, kind_of_coins - 1) + cc.(cc, amount - first_domination.(kind_of_coins), kind_of_coins)
+  end
+end
 
 # With printing
 # cc = fn (cc, amount, kind_of_coins, space) ->
@@ -38,7 +38,8 @@ end
 # Amount in cents
 count_change = fn (amount) ->
   # Two kind of coins, 25 cents and 50 cents
-  cc.(cc, amount, 5, 0)
+  # cc.(cc, amount, 5, 0) # With Printing
+  cc.(cc, amount, 5)
 end
 
 
