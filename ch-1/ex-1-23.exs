@@ -4,17 +4,28 @@ devide = fn (a, b) ->
   rem(a, b) == 0
 end
 
+next = fn (input) ->
+  cond do
+    input == 2 -> 3
+    true -> input + 2
+  end
+end
+
 find_devisor = fn (find_devisor, n, test_devisor) ->
   cond do
     square.(test_devisor) > n -> n
     devide.(n, test_devisor) -> test_devisor
     true ->
-      find_devisor.(find_devisor, n, test_devisor + 1)
+      find_devisor.(find_devisor, n, next.(test_devisor))
   end
 end
 
-smallest_divisor = fn (n) -> find_devisor.(find_devisor, n, 2) end
-prime = fn (n) -> n == smallest_divisor.(n) end
+smallest_divisor = fn (n) ->
+  find_devisor.(find_devisor, n, 2)
+end
+prime = fn (n) ->
+  n == smallest_divisor.(n)
+end
 
 # Timed Prime Test
 report_prime = fn (elapsed_time) ->
