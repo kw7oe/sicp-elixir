@@ -1,0 +1,2 @@
+defmodule MyModule do
+end
