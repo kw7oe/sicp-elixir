@@ -69,11 +69,15 @@ defmodule MyList do
         )
     end
   end
+
+  def last_pair(list) do
+    tail = cdr(list)
+    cond do
+      tail == nil -> car(list)
+      true -> last_pair(tail)
+    end
+  end
 end
 
 list = MyList.list([1,3,5,7])
-list2 = MyList.list([2,4,6,8])
-MyList.print_list(list)
-MyList.list_ref(list, 2) |> IO.inspect
-MyList.len(list) |> IO.inspect
-MyList.append(list, list2) |> MyList.print_list()
+MyList.last_pair(list) |> IO.inspect

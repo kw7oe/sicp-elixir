@@ -13,10 +13,6 @@ defmodule Con do
 
 end
 
-# c = Con.cons(1, 2)
-# Con.car(c) |> IO.inspect
-# Con.cdr(c) |> IO.inspect
-
 defmodule MyList do
   import Con
 
@@ -56,24 +52,38 @@ defmodule MyList do
     len(cdr(list)) + 1
   end
 
-  def append(list1, list2) do
+  # We assumed a list args since
+  # Elixir does not support abitrary
+  # numbers of arguments,
+  # at least in Elixir 1.7.3
+  def same_parity(list) do
+    first = car(list)
+    is_even = fn (x) -> rem(x, 2) == 0 end
+    is_odd = fn (x) -> rem(x, 2) != 0 end
+
+    f = if is_even.(first) do
+      is_even
+    else
+      is_odd
+    end
+    cons(first, same_parity(cdr(list), f))
+  end
+  def same_parity(list, f) do
+    head = car(list)
+    tail = cdr(list)
+
     cond do
-      list1 == nil -> list2
-      true ->
-        cons(
-          car(list1),
-          append(
-            cdr(list1),
-            list2
-          )
-        )
+      tail == nil -> nil
+      f.(head) -> cons(head, same_parity(tail, f))
+      true -> same_parity(tail, f)
     end
   end
+
 end
 
-list = MyList.list([1,3,5,7])
-list2 = MyList.list([2,4,6,8])
-MyList.print_list(list)
-MyList.list_ref(list, 2) |> IO.inspect
-MyList.len(list) |> IO.inspect
-MyList.append(list, list2) |> MyList.print_list()
+odd = MyList.list([1,2,3,4,5,6,7])
+even = MyList.list([2,3,4,5,6,7])
+
+MyList.same_parity(odd) |> MyList.print_list()
+MyList.same_parity(even) |> MyList.print_list()
+

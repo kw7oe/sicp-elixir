@@ -69,11 +69,22 @@ defmodule MyList do
         )
     end
   end
+
+  def reverse(list) do
+    head = car(list)
+    tail = cdr(list)
+    reverse(tail, cons(head, nil))
+  end
+
+  def reverse(list, new_list) do
+    head = car(list)
+    tail = cdr(list)
+    cond do
+      tail == nil -> cons(head, new_list)
+      true -> reverse(tail, cons(head, new_list))
+    end
+  end
 end
 
 list = MyList.list([1,3,5,7])
-list2 = MyList.list([2,4,6,8])
-MyList.print_list(list)
-MyList.list_ref(list, 2) |> IO.inspect
-MyList.len(list) |> IO.inspect
-MyList.append(list, list2) |> MyList.print_list()
+MyList.reverse(list) |> MyList.print_list
