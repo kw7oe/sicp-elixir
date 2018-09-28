@@ -47,6 +47,7 @@ defmodule Mobile do
     cond do
       is_function(head) ->
         for_each(head, f)
+        IO.puts("")
         for_each(cdr(list), f)
       true ->
         f.(head)
@@ -57,14 +58,19 @@ defmodule Mobile do
   def print(list) do
     for_each(list, fn (n) -> IO.write("#{n} ") end)
     IO.puts("")
+    list
   end
 
   def make_mobile(left, right) do
     list([left, right])
+    # Version 2
+    # cons(left, right)
   end
 
   def make_branch(length, structure) do
     list([length, structure])
+    # Version 2
+    # cons(length, structure)
   end
 
   def left_branch(mobile) do
@@ -72,7 +78,9 @@ defmodule Mobile do
   end
 
   def right_branch(mobile) do
-    cdr(mobile)
+    car(cdr(mobile))
+    # Version 2
+    # cdr(mobile)
   end
 
   def branch_length(branch) do
@@ -80,16 +88,40 @@ defmodule Mobile do
   end
 
   def branch_structure(branch) do
-    cdr(branch)
+    car(cdr(branch))
+    # Version 2
+    # cdr(branch)
+  end
+
+  def total_weight(mobile) when is_function(mobile) do
+    right_structure = branch_structure(right_branch(mobile))
+    left_structure = branch_structure(left_branch(mobile))
+    total_weight(right_structure) + total_weight(left_structure)
+  end
+  def total_weight(mobile), do: mobile
+
+  def branch_weight(branch) do
+    len = branch_length(branch)
+    structure = branch_structure(branch)
+    len * total_weight(structure)
+  end
+
+  def is_balance(mobile) do
+    top_right = right_branch(mobile)
+    top_left = left_branch(mobile)
+    branch_weight(top_left) == branch_weight(top_right)
   end
 end
 
-branch = Mobile.make_branch(5, 7)
-branch |> Mobile.print
+branch = Mobile.make_branch(5, 8) |> Mobile.print
+branch2 = Mobile.make_branch(10, 4) |> Mobile.print
+mobile = Mobile.make_mobile(branch, branch2) |> Mobile.print
 
-branch2 = Mobile.make_branch(6, branch)
-branch2 |> Mobile.print
+branch3 = Mobile.make_branch(5, mobile)
+mobile2 = Mobile.make_mobile(branch, branch3) |> Mobile.print
 
-mobile = Mobile.make_mobile(branch, branch2)
-mobile |> Mobile.print
+Mobile.total_weight(mobile) |> IO.inspect
+Mobile.total_weight(mobile2) |> IO.inspect
 
+Mobile.is_balance(mobile) |> IO.inspect
+Mobile.is_balance(mobile2) |> IO.inspect
