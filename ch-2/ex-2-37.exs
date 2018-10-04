@@ -71,12 +71,12 @@ defmodule MyList do
                         tail = cdr(l)
                         cond do
                           tail == nil ->
-                            {head + acc, new_lists}
+                            {f.(head, acc), new_lists}
                           true ->
-                            {head + acc, cons(tail, new_lists)}
+                            {f.(head, acc), cons(tail, new_lists)}
                         end
-                      end, 0, nil)
-    cons(acc, extended_map(f, new_list, 0))
+                      end, initial, nil)
+    cons(acc, extended_map(f, new_list, initial))
   end
 
   def count_leaves(tree) do
@@ -98,20 +98,24 @@ defmodule MyList do
 
   def dot_product(v, w) do
     lists = list([v, w])
-    extended_map(&Kernel.*/2, lists, nil) |> print
-    # |> accumulate(&Kernel.+/2, 0)
+    extended_map(&Kernel.*/2, lists, 1) |> print
+    |> accumulate(&Kernel.+/2, 0)
   end
+
+  def matrix_star_operator(m, v) do
+    m |> map( fn (x) -> dot_product(x, v) end) end
 
 end
 
+# Skip this exercise
 # list1 = MyList.list([1,2])
 # list2 = MyList.list([2,3])
-list3 = MyList.list([3,4])
-list4 = MyList.list([5,6])
+# list3 = MyList.list([3,4])
+# list4 = MyList.list([5,6])
 # list5 = MyList.list([list1,list2,list3,list4])
-# list6 = MyList.list([list1,list2])
+# list6 = MyList.list([list4,list3,list2,list1])
 
-MyList.dot_product(list3, list4)
+# MyList.dot_product(list5, list6) |> IO.inspect
 
 
 
