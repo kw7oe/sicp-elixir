@@ -138,72 +138,24 @@ defmodule MyList do
     list
   end
 
-  def gen_seq(n) do
-    enumerate_interval(1, n)
-    |> map(fn (i) ->
-      enumerate_interval(1, i - 1)
-      |> map(fn (j) -> list([i, j]) end)
-    end)
-    |> accumulate(&MyList.append/2, nil)
-  end
-
-  def prime?(n) do
-    square = fn (n) -> n * n end
-    devide = fn (a, b) ->
-      rem(a, b) == 0
-    end
-
-    next = fn (input) ->
-      cond do
-        input == 2 -> 3
-        true -> input + 2
-      end
-    end
-
-    find_devisor = fn (find_devisor, n, test_devisor) ->
-      cond do
-        square.(test_devisor) > n -> n
-        devide.(n, test_devisor) -> test_devisor
-        true ->
-          find_devisor.(find_devisor, n, next.(test_devisor))
-      end
-    end
-
-    smallest_divisor = fn (n) ->
-      find_devisor.(find_devisor, n, 2)
-    end
-
-    n == smallest_divisor.(n)
-  end
-
-  def prime_sum?(pair) do
-    prime?(car(pair) + cadr(pair))
-  end
-
-  def make_pair_sum(pair) do
-    list([car(pair), cadr(pair), (car(pair) + cadr(pair))])
-  end
-
-  def unique_pairs(n) do
-    enumerate_interval(1, n)
-    |> flatmap(fn (i) ->
-      enumerate_interval(1, i - 1)
-      |> map(fn (j) -> list([i,j]) end)
-    end)
-  end
-
-  def prime_sum_pairs(n) do
-    unique_pairs(n)
-    |> filter(&prime_sum?/1)
-    |> map(&make_pair_sum/1)
-  end
-
   def remove(element, list) do
     list
     |> filter(fn (x) -> x != element end)
   end
 
-
+  def ordered_triples(n, s) do
+    enumerate_interval(1, n)
+    |> flatmap(fn (i) ->
+      enumerate_interval(1, i - 1)
+      |> flatmap(fn(j) ->
+        enumerate_interval(1, j - 1)
+        |> map(fn (k) -> list([i,j,k]) end)
+      end)
+    end)
+    |> filter(fn (triples) ->
+      triples |> accumulate(&Kernel.+/2, 0) <= s
+    end)
+  end
 end
 
 # Demostration for MyList.puts/1
@@ -211,4 +163,4 @@ end
 # list2 = MyList.list([list1, 3, 4]) |> MyList.puts
 # list3 = MyList.list([list1, list2]) |> MyList.puts
 
-MyList.prime_sum_pairs(7) |> MyList.puts
+MyList.ordered_triples(7, 10) |> MyList.puts
