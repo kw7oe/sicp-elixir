@@ -17,6 +17,7 @@ defmodule Con do
   def cadr(c), do: car(cdr(c))
 
   def cddr(c), do: cdr(cdr(c))
+  def cdddr(c), do: cdr(cddr(c))
 
   # Third item of a list
   def caddr(c), do: car(cddr(c))
@@ -170,7 +171,6 @@ defmodule Diff do
       number?(a1, 0) -> a2
       number?(a2, 0) -> a1
       is_number(a1) && is_number(a2) -> a1 + a2
-      MyList.pair?(a2) -> # TODO
       true -> MyList.list([:+, a1, a2])
     end
   end
@@ -181,7 +181,6 @@ defmodule Diff do
       number?(m1, 1) -> m2
       number?(m2, 1) -> m1
       is_number(m1) && is_number(m2) -> m1 * m2
-      MyList.pair?(m2) -> # TODO
       true -> MyList.list([:*, m1, m2])
     end
   end
@@ -198,14 +197,22 @@ defmodule Diff do
     MyList.pair?(x) && car(x) == :+
   end
   def addend(s), do: cadr(s)
-  def augend(s), do: cdr(cdr(s))
+  def augend(s) do
+    cond do
+      cdddr(s) == nil -> caddr(s)
+      true -> cons(:+, cddr(s))
+    end
+  end
 
   def product?(x) do
     MyList.pair?(x) && car(x) == :*
   end
   def multiplier(p), do: cadr(p)
   def multiplicand(p) do
-    make_sum(caddr(p), cddr(p))
+    cond do
+      cdddr(p) == nil -> caddr(p)
+      true -> cons(:*, cddr(p))
+    end
   end
 
   def exponent?(x) do
@@ -221,7 +228,10 @@ defmodule Diff do
       sum?(exp) -> construct_sum(exp, var)
       product?(exp) -> construct_product(exp, var)
       exponent?(exp) -> construct_exponent(exp, var)
-      true -> raise "unknown expression type: DERIV"
+      true ->
+        exp |> MyList.puts
+        var |> IO.inspect
+        raise "unknown expression type: DERIV"
     end
   end
 
@@ -265,4 +275,6 @@ defmodule Diff do
 end
 
 list = MyList.list([:+, :x, 3])
+Diff.deriv(list, :x) |> MyList.puts
+# Diff.deriv(MyList.list([:*, :x, :y]), :x) |> MyList.puts
 Diff.deriv(MyList.list([:*, :x, :y, list]), :x) |> MyList.puts
