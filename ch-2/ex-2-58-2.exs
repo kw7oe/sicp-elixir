@@ -104,18 +104,21 @@ defmodule Diff do
   end
 
   def sum?(x) do
-    MyList.pair?(x) && cadr(x) == :+
+    MyList.pair?(x) && MyList.pair?(cdr(x)) && cadr(x) == :+
   end
   def addend(s), do: car(s)
   def augend(s) do
     cond do
       cdddr(s) == nil -> caddr(s)
-      true -> cddr(s)
+      product?(cddr(s)) ->
+        cddr(s)
+        # cons(:+, cddr(s))
+      true -> cddr(s) |> MyList.puts
     end
   end
 
   def product?(x) do
-    MyList.pair?(x) && cadr(x) == :*
+    MyList.pair?(x) && MyList.pair?(cdr(x)) && cadr(x) == :*
   end
   def multiplier(p), do: car(p)
   def multiplicand(p) do
