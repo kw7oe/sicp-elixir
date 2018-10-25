@@ -192,5 +192,6 @@ Diff.deriv(MyList.list([:x, :+, 3, :*, list4]), :x) |> MyList.puts
 Diff.deriv(MyList.list([:x, :+, 3, :*, list4]), :y) |> MyList.puts
 Diff.deriv(MyList.list([:x, :+, 2]), :x) |> MyList.puts
 
+# Incomplete
 list = MyList.list([:x, :+, :y, :+, 2])
 Diff.deriv(MyList.list([:x, :*, 3, :+, 5, :*, list]), :x) |> MyList.puts
