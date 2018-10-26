@@ -102,12 +102,12 @@ defmodule MySet do
     end
   end
 
-  def len(nil), do: 1
-  def len(tree) do
-    len(right_branch(tree)) + len(left_branch(tree))
+  def len(nil), do: 0
+  def len(elements) do
+    1 + len(cdr(elements))
   end
 
-  def tree_to_list(elements) do
+  def list_to_tree(elements) do
     car(partial_tree(elements, len(elements)))
   end
 
@@ -136,10 +136,6 @@ defmodule MySet do
 
 end
 
-set1 = MySet.make_tree(1,2,3) |> MySet.puts
-set2 = MySet.make_tree(2,3,4) |> MySet.puts
-set3 = MySet.adjoin_set(5, set2) |> MySet.puts
-
-MySet.len(set3) |> IO.inspect
-MySet.len(set1) |> IO.inspect
-MySet.partial_tree(set1, 2) |> MySet.puts
+list = MySet.set([1,3,5,7,9,11]) |> MySet.puts
+MySet.len(list) |> IO.inspect
+MySet.list_to_tree(list) |> MySet.puts
