@@ -117,10 +117,10 @@ defmodule MySet do
     else
       left_size = div(n - 1, 2)
       left_result = partial_tree(elts, left_size)
-      left_tree = car(left_result)
+      left_tree = car(left_result) |> MySet.puts
       non_left_elts = cdr(left_result)
 
-      right_size = n - left_size + 1
+      right_size = n - (left_size + 1)
       this_entry = car(non_left_elts)
 
       right_result = partial_tree(cdr(non_left_elts), right_size)
@@ -139,3 +139,94 @@ end
 list = MySet.set([1,3,5,7,9,11]) |> MySet.puts
 MySet.len(list) |> IO.inspect
 MySet.list_to_tree(list) |> MySet.puts
+# Example
+# -> car(partial_tree([1,3,5,7], 4))
+#
+# partial_tree([1,3,5,7], 4)
+# -> left_size = (4 - 1) / 2
+#              = 1
+#    left_result = partial_tree([1,3,5,7], 1) # Line 174
+#                = cons(make_tree(1, nil, nil), [3,5,7]
+#    left_tree = make_tree(1, nil, nil)
+#    non_left_elts = [3,5,7]
+#
+#    right_size = 4 - (1 + 1)
+#               = 2
+#    this_entry = car([3,5,7]) = 3
+#
+#    right_result = partial_tree([5,7], 2) # Line 194
+#                 = cons(make_tree(5, nil, make_tree(7, nil, nil), [])
+#    right_tree = make_tree(5, nil, make_tree(7, nil, nil))
+#    remaining = []
+#    cons(
+#      make_tree(3, left_tree, right_tree),
+#      []
+#    )
+#
+# =>       3
+#         / \
+#        1   5
+#           / \
+#          nil 7
+#             / \
+#           nil nil
+#
+# partial_tree([1,3,5,7], 1)
+# -> left_size = (1 - 1) / 2
+#              = 0
+#    left_result = partial_tree([1,3,5,7], 0)
+#                = cons(nil, [1,3,5,7])
+#    left_tree = car(left_result)
+#              = nil
+#    non_left_elts = [1,3,5,7]
+#
+#    right_size = 1 - (0 + 1)
+#               = 0
+#
+#    this_entry = car(non_left_elts) = 1
+#    right_result = partial_tree([3,5,7], 0)
+#                 = cons(nil, [3,5,7]
+#    right_tree = nil
+#    remaining = [3,5,7]
+#    cons(make_tree(1, nil, nil), remaining)
+#
+#
+# partial_tree([5,7], 2)
+# -> left_size = (2 - 1) / 2
+#              = 0
+#    left_result = partial_tree([5,7], 0)
+#                = cons(nil, [5,7])
+#    left_tree = nil
+#    non_left_elts = [5,7]
+#
+#    right_size = 2 - (0 + 1)
+#                = 1
+#    this_entry = car([5,7]) = 5
+#    right_result = partial_tree([7], 1) # Line 214
+#                 = cons(make_tree(7, nil, nil), [])
+#
+#    right_tree = make_tree(7, nil, nil)
+#    remaining = []
+#
+#    cons(make_tree(5, nil, make_tree(7, nil, nil), [])
+#
+#
+# partial_tree([7], 1)
+# -> left_size = (1 - 1) / 2
+#              = 0
+#    left_result = partial_tree([7], 0)
+#                = cons(nil, [7])
+#    left_tree = nil
+#
+#    non_left_elts = [7]
+#
+#    right_size = 1 - (0 + 1)
+#               = 0
+#    this_entry = 7
+#
+#    right_result = partial_tree([], 0)
+#               = cons(nil, [])
+#    right_tree = nil
+#
+#    cons(make_tree(7, nil, nil), [])
+#
