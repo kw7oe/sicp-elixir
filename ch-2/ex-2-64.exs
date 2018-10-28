@@ -230,3 +230,19 @@ MySet.list_to_tree(list) |> MySet.puts
 #
 #    cons(make_tree(7, nil, nil), [])
 #
+# 1. Write a short paragraph explaining as clearly as you can how partial_tree works. Draw the tree produced by list->tree for the list (1 3 5 7 9 11)
+#
+#  partial_tree breaks the list into three parts and recurcively break
+#  those parts into tree. It then create a new tree with the entry,
+#  left tree and right tree.
+#
+#       5
+#     /   \
+#    1     9
+#     \    / \
+#      3  7  11
+#
+# 2. What is the order of growth in number of steps required by list->tree to
+# convert a list of n elements?
+#
+# To be honesnt, I don't know.
