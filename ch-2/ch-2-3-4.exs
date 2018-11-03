@@ -1,4 +1,3 @@
-
 defmodule Con do
   def cons(x, y) do
     fn (f) -> f.(x,y) end
@@ -14,6 +13,7 @@ defmodule Con do
 
   def cadr(c), do: car(cdr(c))
   def caddr(c), do: car(cdr(cdr(c)))
+  def cadddr(c), do: car(cdr(cdr(cdr(c))))
 end
 
 defmodule MySet do
@@ -34,8 +34,6 @@ defmodule MySet do
   end
 
   def entry(tree), do: car(tree)
-  def left_branch(tree), do: cadr(tree)
-  def right_branch(tree), do: caddr(tree)
   def make_tree(entry, left, right) do
     cond do
       is_nil(left) || is_nil(right) ->
@@ -84,24 +82,24 @@ defmodule MySet do
     end
   end
 
-  def adjoin_set(x, set) do
-    cond do
-      set == nil -> make_tree(x, nil, nil)
-      x == entry(set) -> set
-      x < entry(set) ->
-        make_tree(
-          entry(set),
-          adjoin_set(x, left_branch(set)),
-          right_branch(set)
-        )
-      true ->
-        make_tree(
-          entry(set),
-          left_branch(set),
-          adjoin_set(x, right_branch(set))
-        )
-    end
-  end
+  # def adjoin_set(x, set) do
+  #   cond do
+  #     set == nil -> make_tree(x, nil, nil)
+  #     x == entry(set) -> set
+  #     x < entry(set) ->
+  #       make_tree(
+  #         entry(set),
+  #         adjoin_set(x, left_branch(set)),
+  #         right_branch(set)
+  #       )
+  #     true ->
+  #       make_tree(
+  #         entry(set),
+  #         left_branch(set),
+  #         adjoin_set(x, right_branch(set))
+  #       )
+  #   end
+  # end
 
   def tree_to_list(tree) do
     if is_nil(tree) do
@@ -147,7 +145,7 @@ defmodule MySet do
   end
 
   # Huffman trees
-  def make_leaf(symlol, weight) do
+  def make_leaf(symbol, weight) do
     set([:leaf, symbol, weight])
   end
 
@@ -158,6 +156,88 @@ defmodule MySet do
   def symbol_leaf(x), do: cadr(x)
   def weight_leaf(x), do: caddr(x)
 
+  def make_code_tree(left, right) do
+    set([left, right, append(symbols(left), symbols(right)),
+         weight(left) + weight(right)])
+  end
+
+  def left_branch(tree), do: car(tree)
+  def right_branch(tree), do: cadr(tree)
+
+  def symbols(tree) do
+    if leaf?(tree) do
+      set([symbol_leaf(tree)])
+    else
+      caddr(tree)
+    end
+  end
+
+  def weight(tree) do
+    if leaf?(tree) do
+      weight_leaf(tree)
+    else
+      cadddr(tree)
+    end
+  end
+
+  def decode(bits, tree) do
+    decode_1 = fn (decode_1, bits, current_branch) ->
+      if is_nil(bits) do
+        nil
+      else
+        next_branch = choose_branch(car(bits), current_branch)
+        if leaf?(next_branch) do
+          cons(
+            symbol_leaf(next_branch),
+            decode_1.(decode_1, cdr(bits), tree)
+          )
+        else
+          decode_1.(decode_1, cdr(bits), next_branch)
+        end
+      end
+    end
+    decode_1.(decode_1, bits, tree)
+  end
+
+  def choose_branch(bit, branch) do
+    cond do
+      bit == 0 -> left_branch(branch)
+      bit == 1 -> right_branch(branch)
+      true -> raise "Bad bit: CHOOSE_BRANCH"
+    end
+  end
+
+  def adjoin_set(x, set) do
+    cond do
+      is_nil(set) -> set([x])
+      weight(x) < weight(car(set)) -> cons(x, set)
+      true ->
+        cons(
+          car(set),
+          adjoin_set(x, cdr(set))
+        )
+    end
+  end
+
+  def make_leaf_set(pairs) do
+    if is_nil(pairs) do
+      nil
+    else
+      pair = car(pairs)
+      adjoin_set(
+        make_leaf(car(pair), cadr(pair)),
+        make_leaf_set(cdr(pairs))
+      )
+    end
+  end
 end
+
+set1 = MySet.set([:A, 4])
+set2 = MySet.set([:B, 2])
+set3 = MySet.set([:C, 1])
+set4 = MySet.set([:D, 1])
+pairs = MySet.set([set1,set2,set3,set4])
+
+MySet.make_leaf_set(pairs) |> MySet.puts
 
 
