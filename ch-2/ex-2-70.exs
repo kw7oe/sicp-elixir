@@ -320,5 +320,11 @@ MySet.len(bit) |> IO.puts
 #
 # How many bits are required for the encoding?
 #
-# 27 x 2 + 13 + 10 + 9 = 86 bits
+# 84 bits
+#
+# The smallest number of bits require is:
+#
+# We have 8 symbols we need to encode, hence we need 2 ^ 3 = 8, 3 bits
+# per symbol to encode the message. The total length of the message is
+# 36. So, the total bits needed is 36 x 3 = 108 bits.
 
