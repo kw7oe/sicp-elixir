@@ -14,6 +14,8 @@ defmodule Con do
   def cadr(c), do: car(cdr(c))
   def caddr(c), do: car(cdr(cdr(c)))
   def cadddr(c), do: car(cdr(cdr(cdr(c))))
+
+  def cddr(c), do: cdr(cdr(c))
 end
 
 defmodule MySet do
@@ -264,33 +266,59 @@ defmodule MySet do
       )
     end
   end
+
+  def generate_huffman_tree(pairs) do
+    successive_merge(make_leaf_set(pairs))
+  end
+
+#   def successive_merge(leaf_set) do
+#     merge = fn (f, set, acc) ->
+#       cond do
+#         is_nil(set) -> acc
+#         true ->
+#           f.(f, cdr(set), MySet.make_code_tree(car(set), acc))
+#       end
+#     end
+
+#     merge.(merge, cdr(leaf_set), car(leaf_set))
+#   end
+
+  def successive_merge(set) do
+    cond do
+      is_nil(set) -> nil
+      is_nil(cdr(set)) -> car(set)
+      true -> successive_merge(
+        adjoin_set(
+          make_code_tree(car(set), cadr(set)),
+          cddr(set)
+        )
+      )
+    end
+  end
 end
 
-set1 = MySet.set([:A, 4])
-set2 = MySet.set([:B, 2])
-set3 = MySet.set([:C, 1])
-set4 = MySet.set([:D, 1])
-pairs = MySet.set([set1,set2,set3,set4])
+set1 = MySet.set([:A, 2])
+set2 = MySet.set([:BOOM, 1])
+set3 = MySet.set([:GET, 2])
+set4 = MySet.set([:JOB, 2])
+set5 = MySet.set([:NA, 16])
+set6 = MySet.set([:SHA, 3])
+set7 = MySet.set([:YIP, 9])
+set8 = MySet.set([:WAH, 1])
+pairs = MySet.set([set1,set2,set3,set4,set5,set6,set7,set8])
+message = MySet.set([
+  :GET, :A, :JOB, :SHA, :NA, :NA, :NA, :NA, :NA, :NA, :NA, :NA,
+  :GET, :A, :JOB, :SHA, :NA, :NA, :NA, :NA, :NA, :NA, :NA, :NA,
+  :WAH, :YIP, :YIP, :YIP, :YIP, :YIP, :YIP, :YIP, :YIP, :YIP,
+  :SHA, :BOOM
+])
 
-MySet.make_leaf_set(pairs)
+pairs = MySet.generate_huffman_tree(pairs) |> MySet.puts
+bit = MySet.encode(message, pairs) |> MySet.puts
+MySet.len(bit) |> IO.puts
 
-a = MySet.make_leaf(:A, 4)
-b = MySet.make_leaf(:B, 2)
-c = MySet.make_leaf(:C, 1)
-d = MySet.make_leaf(:D, 1)
+#
+# How many bits are required for the encoding?
+#
+# 27 x 2 + 13 + 10 + 9 = 86 bits
 
-sample_tree = MySet.make_code_tree(
-  a,
-  MySet.make_code_tree(
-    b,
-    MySet.make_code_tree(
-      d,
-      c
-    )
-  )
-)
-sample_message = MySet.set([0,1,1,0,0,1,0,1,0,1,1,1,0])
-
-MySet.decode(sample_message, sample_tree)
-|> MySet.encode(sample_tree)
-|> MySet.puts

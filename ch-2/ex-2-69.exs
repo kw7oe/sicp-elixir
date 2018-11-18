@@ -14,6 +14,8 @@ defmodule Con do
   def cadr(c), do: car(cdr(c))
   def caddr(c), do: car(cdr(cdr(c)))
   def cadddr(c), do: car(cdr(cdr(cdr(c))))
+
+  def cddr(c), do: cdr(cdr(c))
 end
 
 defmodule MySet do
@@ -272,17 +274,30 @@ defmodule MySet do
     end
   end
 
-  def successive_merge(leaf_set) do
-    merge = fn (f, set, acc) ->
-      cond do
-        is_nil(set) -> acc
-        true ->
-          f.(f, cdr(set), MySet.make_code_tree(car(set), acc))
-      end
+  def successive_merge(set) do
+    cond do
+      is_nil(set) -> nil
+      is_nil(cdr(set)) -> car(set)
+      true -> successive_merge(
+        adjoin_set(
+          make_code_tree(car(set), cadr(set)),
+          cddr(set)
+        )
+      )
     end
-
-    merge.(merge, cdr(leaf_set), car(leaf_set))
   end
+
+  # def successive_merge(leaf_set) do
+  #   merge = fn (f, set, acc) ->
+  #     cond do
+  #       is_nil(set) -> acc
+  #       true ->
+  #         f.(f, cdr(set), MySet.make_code_tree(car(set), acc))
+  #     end
+  #   end
+
+  #   merge.(merge, cdr(leaf_set), car(leaf_set))
+  # end
 
   # With the need to reverse leaf_set first
   # in generate_huffman_tree
@@ -315,7 +330,7 @@ b = MySet.make_leaf(:B, 2)
 c = MySet.make_leaf(:C, 1)
 d = MySet.make_leaf(:D, 1)
 
-sample_tree = MySet.make_code_tree(
+MySet.make_code_tree(
   a,
   MySet.make_code_tree(
     b,
