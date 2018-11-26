@@ -122,12 +122,35 @@ defmodule Complex do
   end
 
   def image_part(z) do
+    cond do
+      rectangular?(z) -> image_part_rectangular(contents(z))
+      polar?(z) -> image_part_polar(contents(z))
+      true -> raise "Unknown type: IMAGE PART"
+    end
   end
 
   def magnitude(z) do
+    cond do
+      rectangular?(z) -> magnitude_rectangular(contents(z))
+      polar?(z) -> magnitude_polar(contents(z))
+      true -> raise "Unknown type: MAGNITUDE"
+    end
   end
 
   def angle(z) do
+    cond do
+      rectangular?(z) -> angle_rectangular(contents(z))
+      polar?(z) -> angle_polar(contents(z))
+      true -> raise "Unknown type: ANGLE"
+    end
+  end
+
+  def make_from_real_imag(x, y) do
+    make_from_real_imag_rectangular(x, y)
+  end
+
+  def make_from_mag_ang(r, a) do
+    make_from_mag_ang_polar(r, a)
   end
 
   # API
