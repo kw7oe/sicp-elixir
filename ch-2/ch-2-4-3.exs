@@ -110,158 +110,162 @@ defmodule Rectangular do
 
   def install do
     OperationTypeTable.put(:real_part, :rectangular, &Rectangular.real_part/1)
+    OperationTypeTable.put(:image_part, :rectangular, &Rectangular.image_part/1)
+    OperationTypeTable.put(:magnitude, :rectangular, &Rectangular.magnitude/1)
+    OperationTypeTable.put(:angle, :rectangular, &Rectangular.angle/1)
+    OperationTypeTable.put(:make_from_real_imag, :rectangular,
+                           fn (x, y) ->
+                             tag(make_from_real_imag(x, y))
+                           end)
+    OperationTypeTable.put(:make_from_mag_ang, :rectangular,
+                           fn (x, y) ->
+                             tag(make_from_mag_ang(x, y))
+                           end)
   end
 end
 
-OperationTypeTable.start_link
-Rectangular.install
-OperationTypeTable.get(:real_part, :rectangular) |> IO.inspect
+defmodule Polar do
+  import Tag
+  import Con
 
-# defmodule Complex do
-#   import Tag
-#   import Con
+  # Constructor
+  def make_from_real_imag(x, y) do
+    cons(
+      :math.sqrt(:math.pow(x, 2) + :math.pow(y, 2)),
+      :math.atan(y / x)
+    )
+  end
 
-#   def polar?(z) do
-#     type_tag(z) == :polar
-#   end
+  def make_from_mag_ang(r, a) do
+    cons(r, a)
+  end
 
-#   def rectangular?(z) do
-#     type_tag(z) == :rectangular
-#   end
+  # Selector
+  def real_part(z) do
+    magnitude(z) * :math.cos(angle(z))
+  end
 
-#   # ======
-#   # Alyssa
-#   # ======
-#   def make_from_real_imag_polar(x, y) do
-#     attach_tag(:polar,
-#       cons(
-#         :math.sqrt(:math.pow(x, 2) + :math.pow(y, 2)),
-#         :math.atan(y / x)
-#       )
-#     )
-#   end
+  def image_part(z) do
+    magnitude(z) * :math.sin(angle(z))
+  end
 
-#   def make_from_mag_ang_polar(r, a) do
-#     attach_tag(:polar, cons(r, a))
-#   end
+  def magnitude(z) do
+    car(z)
+  end
 
-#   def real_part_polar(z) do
-#     magnitude_polar(z) * :math.cos(angle_polar(z))
-#   end
+  def angle(z) do
+    cdr(z)
+  end
 
-#   def image_part_polar(z) do
-#     magnitude_polar(z) * :math.sin(angle_polar(z))
-#   end
+  # Interface to the rest of the system
+  def tag(x), do: attach_tag(:polar, x)
 
-#   def magnitude_polar(z) do
-#     car(z)
-#   end
+  def install do
+    OperationTypeTable.put(:real_part, :polar, &Polar.real_part/1)
+    OperationTypeTable.put(:image_part, :polar, &Polar.image_part/1)
+    OperationTypeTable.put(:magnitude, :polar, &Polar.magnitude/1)
+    OperationTypeTable.put(:angle, :polar, &Polar.angle/1)
+    OperationTypeTable.put(:make_from_real_imag, :polar,
+                           fn (x, y) ->
+                             tag(make_from_real_imag(x, y))
+                           end)
+    OperationTypeTable.put(:make_from_mag_ang, :polar,
+                           fn (x, y) ->
+                             tag(make_from_mag_ang(x, y))
+                           end)
+  end
+end
 
-#   def angle_polar(z) do
-#     cdr(z)
-#   end
 
-#   # ===
-#   # Ben
-#   # ===
-#   def make_from_real_imag_rectangular(x, y) do
-#     attach_tag(:rectangular, cons(x, y))
-#   end
+defmodule Complex do
+  import Tag
 
-#   def make_from_mag_ang_rectangular(r, a) do
-#     attach_tag(:rectangular,
-#       cons(
-#         r * :math.cos(a),
-#         r * :math.sin(a)
-#       )
-#     )
-#   end
+  def init do
+    OperationTypeTable.start_link
+    Rectangular.install
+    Polar.install
+  end
 
-#   def real_part_rectangular(z) do
-#     car(z)
-#   end
+  def apply_generic(op, args) do
+    type_tags = type_tag(args)
+    proc = OperationTypeTable.get(op, type_tags)
+    if proc do
+      proc.(contents(args))
+    else
+      raise "No method for these types: APPLY GENERIC"
+    end
+  end
 
-#   def image_part_rectangular(z) do
-#     cdr(z)
-#   end
+  # Generic Selector
+  def real_part(z) do
+    apply_generic(:real_part, z)
+  end
 
-#   def magnitude_rectangular(z) do
-#     :math.sqrt(:math.pow(real_part_rectangular(z), 2) + :math.pow(image_part_rectangular(z), 2))
-#   end
+  def image_part(z) do
+    apply_generic(:image_part, z)
+  end
 
-#   def angle_rectangular(z) do
-#     :math.atan(
-#       image_part_rectangular(z) / real_part_rectangular(z)
-#     )
-#   end
+  def magnitude(z) do
+    apply_generic(:magnitude, z)
+  end
 
-#   # Selector
-#   def real_part(z) do
-#     cond do
-#       rectangular?(z) -> real_part_rectangular(contents(z))
-#       polar?(z) -> real_part_polar(contents(z))
-#       true -> raise "Unknown type: REAL PART"
-#     end
-#   end
+  def angle(z) do
+    apply_generic(:angle, z)
+  end
 
-#   def image_part(z) do
-#     cond do
-#       rectangular?(z) -> image_part_rectangular(contents(z))
-#       polar?(z) -> image_part_polar(contents(z))
-#       true -> raise "Unknown type: IMAGE PART"
-#     end
-#   end
+  # Constructor
+  def make_from_real_imag(x, y) do
+    OperationTypeTable.get(:make_from_real_imag, :rectangular).(x, y)
+  end
 
-#   def magnitude(z) do
-#     cond do
-#       rectangular?(z) -> magnitude_rectangular(contents(z))
-#       polar?(z) -> magnitude_polar(contents(z))
-#       true -> raise "Unknown type: MAGNITUDE"
-#     end
-#   end
+  def make_from_mag_ang(r, a) do
+    OperationTypeTable.get(:make_from_mag_ang, :polar).(r, a)
+  end
 
-#   def angle(z) do
-#     cond do
-#       rectangular?(z) -> angle_rectangular(contents(z))
-#       polar?(z) -> angle_polar(contents(z))
-#       true -> raise "Unknown type: ANGLE"
-#     end
-#   end
+  # API
+  def add_complex(z1, z2) do
+    make_from_real_imag(
+      real_part(z1) + real_part(z2),
+      image_part(z1) + image_part(z2)
+    )
+  end
 
-#   def make_from_real_imag(x, y) do
-#     make_from_real_imag_rectangular(x, y)
-#   end
+  def sub_complex(z1, z2) do
+    make_from_real_imag(
+      real_part(z1) - real_part(z2),
+      image_part(z1) - image_part(z2)
+    )
+  end
 
-#   def make_from_mag_ang(r, a) do
-#     make_from_mag_ang_polar(r, a)
-#   end
+  def mul_complex(z1, z2) do
+    make_from_mag_ang(
+      magnitude(z1) * magnitude(z2),
+      angle(z1) + angle(z2)
+    )
+  end
 
-#   # API
-#   def add_complex(z1, z2) do
-#     make_from_real_imag(
-#       real_part(z1) + real_part(z2),
-#       image_part(z1) + image_part(z2)
-#     )
-#   end
+  def div_complex(z1, z2) do
+    make_from_mag_ang(
+      magnitude(z1) / magnitude(z2),
+      angle(z1) - angle(z2)
+    )
+  end
+end
 
-#   def sub_complex(z1, z2) do
-#     make_from_real_imag(
-#       real_part(z1) - real_part(z2),
-#       image_part(z1) - image_part(z2)
-#     )
-#   end
+Complex.init
+c1 = Complex.make_from_mag_ang(10, 20)
+c2 = Complex.make_from_real_imag(1,2)
 
-#   def mul_complex(z1, z2) do
-#     make_from_mag_ang(
-#       magnitude(z1) * magnitude(z2),
-#       angle(z1) + angle(z2)
-#     )
-#   end
+c1 |> Complex.angle |> IO.inspect
+c2 |> Complex.angle |> IO.inspect
 
-#   def div_complex(z1, z2) do
-#     make_from_mag_ang(
-#       magnitude(z1) / magnitude(z2),
-#       angle(z1) - angle(z2)
-#     )
-#   end
-# end
+c1 |> Complex.real_part |> IO.inspect
+c2 |> Complex.real_part |> IO.inspect
+
+c3 = Complex.add_complex(c1, c2)
+
+c3 |> Complex.real_part |> IO.inspect
+c3 |> Complex.image_part |> IO.inspect
+c3 |> Complex.magnitude |> IO.inspect
+c3 |> Complex.angle |> IO.inspect
+
